@@ -45,30 +45,33 @@ class Trademe(object):
             result = resp.json()
         except Exception as e:
             raise
+
         if not feedback_func is None:
             result = feedback_func(result)
         return result
 
 def feedback_searching_result(data):
-    listing_url = 'http://www.trademe.co.nz/Browse/Listing.aspx?id=%s'
-    ret = list()
-    f_keys = ['ListingId', 'Title', 'Category', 'PictureHref', 
-              'Region', 'Suburb', 'PriceDisplay', 'StartPrice',
-              'BuyNowPrice']
-
-    for raw_listing in data['List']:
+    def _collect(raw_listing):
         listing = filter(lambda x: x[0] in f_keys, 
                               raw_listing.items())
         listing = dict(listing)
         listing['ListingUrl'] = listing_url % listing['ListingId'] 
+
         which_category = filter(lambda c: 
                             c['Category'] == listing['Category'],
                             data['FoundCategories'])
         try:
             listing['CategoryName'] = which_category[0]['Name']
         except IndexError as e:
-            pass
-        ret.append(listing)
+            listing['CategoryName'] = ''
+
+        return listing
+
+    listing_url = 'http://www.trademe.co.nz/Browse/Listing.aspx?id=%s'
+    f_keys = ['ListingId', 'Title', 'Category', 'PictureHref', 
+              'Region', 'Suburb', 'PriceDisplay', 'StartPrice',
+              'BuyNowPrice']
+    ret = map(_collect, data['List'])
     return ret
 
 def main():

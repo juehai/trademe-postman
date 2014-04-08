@@ -3,11 +3,13 @@
 # Author: Yang Gao <gaoyang.public@gmail.com>
 # vim: ts=4 et ai
 
+import sys
 import requests 
-from requests_oauthlib import OAuth1Session
 import json
 import time
 import datetime
+import yaml
+from requests_oauthlib import OAuth1Session
 
 TRADEME_BASE_API = 'http://api.trademe.co.nz/v1/Search/%s.json'
 
@@ -74,21 +76,41 @@ def feedback_searching_result(data):
     ret = map(_collect, data['List'])
     return ret
 
+def getConfig(cfile):
+    def _merge(data):
+        config = dict()
+        for item, value in data.items():
+            if item.startswith('.'): continue
+            config[item] = value.copy()
+            if value.has_key('.include'):
+                included = dict(data[value['.include']])
+                config[item] = dict(included, **config[item])
+                del config[item]['.include']
+        return config
+            
+    config = dict()
+    try:
+        with open(cfile, 'rb') as f:
+            resource = yaml.load(f.read())
+            config = _merge(resource)
+            f.close()
+    except IOError as e:
+        print str(e)
+        sys.exit(2)
+    except KeyError as e:
+        print 'Include config(%s) does not exist.' % str(e)
+        sys.exit(3)
+    except Exception as e:
+        raise
+    return config
+
+
 def main():
     trademe = Trademe()
-    params = dict()
-    params['buy'] = 'All'
-    params['category'] = 1259
-    params['condition'] = 'Used'
-    params['expired'] = 'false'
-    params['pay'] = 'All'
-    params['photo_size'] = 'Large'
-    params['return_metadata'] = 'false'
-    params['page'] = '1'
-    params['row'] = '25'
-    params['shipping_method'] = 'All'
-    params['sort_order'] = 'ExpiryDesc'
-    func = feedback_searching_result
+    config = getConfig('prod.yaml')
+    params = config.get('search_trailer_in_farming')
+    #func = feedback_searching_result
+    func = None
     listings = trademe.getListings(feedback_func=func, **params)
     import pprint
     pprint.pprint(listings)

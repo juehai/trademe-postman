@@ -27,5 +27,3 @@ search_trailer_in_farming:
   .include: .base
   category: '0010-0395-'
   search_string: 'trailer'
-  category_depth: 1
-

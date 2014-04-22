@@ -26,4 +26,5 @@ Hobs & ovens:
 search_trailer_in_farming:
   .include: .base
   category: '0010-0395-'
+  condition: 'All'
   search_string: 'trailer'

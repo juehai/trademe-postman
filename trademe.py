@@ -12,6 +12,10 @@ import yaml
 from requests_oauthlib import OAuth1Session
 
 TRADEME_BASE_API = 'http://api.trademe.co.nz/v1/Search/%s.json'
+CONSUMER_KEY     = ''
+CONSUMER_SECRET  = ''
+OAUTH_TOKEN      = ''
+OAUTH_SECRET     = ''
 
 def json_encode(s):
     return json.dumps(s, separators=(',',':'))
@@ -107,10 +111,11 @@ def getConfig(cfile):
 
 def main():
     trademe = Trademe()
+    trademe.authenticate(CONSUMER_KEY, CONSUMER_SECRET,
+                         OAUTH_KEY, OAUTH_SECRET)
     config = getConfig('prod.yaml')
     params = config.get('search_trailer_in_farming')
-    #func = feedback_searching_result
-    func = None
+    func = feedback_searching_result
     listings = trademe.getListings(feedback_func=func, **params)
     import pprint
     pprint.pprint(listings)

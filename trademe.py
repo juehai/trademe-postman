@@ -14,8 +14,9 @@ from requests_oauthlib import OAuth1Session
 TRADEME_BASE_API = 'http://api.trademe.co.nz/v1/Search/%s.json'
 CONSUMER_KEY     = ''
 CONSUMER_SECRET  = ''
+OAUTH_TOKEN_SECRET = ''
 OAUTH_TOKEN      = ''
-OAUTH_SECRET     = ''
+
 
 def json_encode(s):
     return json.dumps(s, separators=(',',':'))
@@ -29,15 +30,36 @@ class Trademe(object):
     def __init__(self):
         pass
 
+    def _authenticate(self, consumer_key, 
+                           consumer_secret):
+#                           oauth_token, 
+#                           oauth_secret):
+        request_token_url = 'https://secure.trademe.co.nz/Oauth/RequestToken?scope=MyTradeMeRead,MyTradeMeWrite'
+        authorization_base_url = 'https://secure.trademe.co.nz/Oauth/Authorize'
+        access_token_url = 'https://secure.trademe.co.nz/Oauth/AccessToken'
+        kw = dict()
+        kw['client_secret']=consumer_secret
+        #kw['resource_owner_key']=oauth_token
+        #kw['resource_owner_secret']=oauth_secret
+        self.trademe = OAuth1Session(consumer_key, **kw) 
+        self.trademe.fetch_request_token(request_token_url)
+        authorization_url = self.trademe.authorization_url(authorization_base_url)
+        print(authorization_url)
+        redirect_response = raw_input('Paste the full redirect URL here:')
+        self.trademe.parse_authorization_response(redirect_response)
+        oauthxx = self.trademe.fetch_access_token(access_token_url)
+        print oauthxx
+	
     def authenticate(self, consumer_key, 
-                           consumer_secret, 
+                           consumer_secret,
                            oauth_token, 
                            oauth_secret):
         kw = dict()
-        kw['client_secret']=consumer_secret
-        kw['resource_owner_key']=oauth_token
-        kw['resource_owner_secret']=oauth_secret
+        kw['client_secret'] = consumer_secret
+        kw['resource_owner_key'] = oauth_token
+        kw['resource_owner_secret'] = oauth_secret
         self.trademe = OAuth1Session(consumer_key, **kw) 
+	
 
     def getListings(self, api_path="General", 
                           feedback_func=None, **kw):
@@ -54,6 +76,15 @@ class Trademe(object):
 
         if not feedback_func is None:
             result = feedback_func(result)
+        return result
+
+    def getMyWatchList(self):
+        api = 'https://api.trademe.co.nz/v1/MyTradeMe/Watchlist/All.json'
+        try:
+            resp = self.trademe.get(api)
+            result = resp.json()
+        except Exception as e:
+            raise
         return result
 
 def feedback_searching_result(data):
@@ -108,17 +139,78 @@ def getConfig(cfile):
         raise
     return config
 
+def sendEmail(smtp, user, passwd, me, send_to,
+               subject, content, cc_to=None):
+    '''
+    @smtp SMTP server ip or domain.formart: "smtp.gmail.com:587"
+    @user SMTP login user name.
+    @passwd SMTP login password.
+    @me display this string at "from" when he received mail.
+    @to send to who.
+    @subject email subject
+    @content email content
+    '''
+    import email
+    import mimetypes
+    from email.MIMEMultipart import MIMEMultipart
+    from email.MIMEText import MIMEText
+    from email.MIMEImage import MIMEImage
+    from email.Header import Header
+    from email.utils import COMMASPACE,formatdate
+    import smtplib
+
+    assert(isinstance(send_to, list))
+    smtp_host, smtp_port = smtp.split(":")
+
+    toAll = list()
+    msg = MIMEText(content.encode('utf-8'), 'html', 'utf-8')
+    msg['Subject'] = Header(subject, 'utf-8')
+    msg['From'] = me
+    msg['To'] = COMMASPACE.join(send_to)
+    msg['Date'] = formatdate(localtime=True)
+
+    [toAll.append(i) for i in send_to]
+
+    if cc_to:
+        msg['Cc'] = COMMASPACE.join(cc_to)
+        [toAll.append(i) for i in cc_to]
+
+    mailServer = smtplib.SMTP(smtp_host, smtp_port)
+    mailServer.ehlo()
+    mailServer.starttls()
+    mailServer.ehlo()
+    mailServer.login(user, passwd)
+    mailServer.sendmail(user, toAll, msg.as_string())
+    mailServer.close()
+
+
+def template(data):
+    pass
 
 def main():
     trademe = Trademe()
+    #trademe._authenticate(CONSUMER_KEY, CONSUMER_SECRET)
+    #                      OAUTH_TOKEN, OAUTH_SECRET)
     trademe.authenticate(CONSUMER_KEY, CONSUMER_SECRET,
-                         OAUTH_KEY, OAUTH_SECRET)
+                          OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
+    watch_list = trademe.getMyWatchList()
     config = getConfig('prod.yaml')
     params = config.get('search_trailer_in_farming')
     func = feedback_searching_result
     listings = trademe.getListings(feedback_func=func, **params)
-    import pprint
-    pprint.pprint(listings)
+
+    #SMTP='smtp.gmail.com:587'
+    #SMTP_USER = ''
+    #SMTP_PASS = ''
+    #ME = 'TradeMePostman'
+    #SEND_TO = ['']
+    #SUBJECT = 'TEST SEND MAIL'
+    #CONTENT = '<html><body>hello.</body></html>'
+    
+    
+
+    #sendEmail(SMTP, SMTP_USER, SMTP_PASS,
+    #          ME, SEND_TO, SUBJECT, CONTENT)
     
 
 if __name__ == '__main__':

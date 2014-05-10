@@ -9,6 +9,7 @@ import json
 import time
 import datetime
 import yaml
+import sqlite3
 from requests_oauthlib import OAuth1Session
 
 TRADEME_BASE_API = 'http://api.trademe.co.nz/v1/Search/%s.json'
@@ -156,8 +157,7 @@ def sendEmail(smtp, user, passwd, me, send_to,
     from email.MIMEText import MIMEText
     from email.MIMEImage import MIMEImage
     from email.Header import Header
-    from email.utils import COMMASPACE,formatdate
-    import smtplib
+    from email.utils import COMMASPACE,formatdate import smtplib
 
     assert(isinstance(send_to, list))
     smtp_host, smtp_port = smtp.split(":")
@@ -186,6 +186,32 @@ def sendEmail(smtp, user, passwd, me, send_to,
 
 def template(data):
     pass
+
+class ListingModel(object):
+    TABLE = 'TradeMe'
+
+    SQL_CREATE_TABLE = '''
+CREATE TABLE IF NOT EXISTS %(tb)s(id INTEGER PRIMARY KEY DESC, title, price, buynow, category, url, pic, region, suburb, md5);
+CREATE UNIQUE INDEX TradeMe_md5 ON %(tb)s(md5);
+'''
+
+    SQL_SELECT_LISTING = 'SELECT id FROM %(tb)s WHERE md5=%(md5)s;'
+
+    def __init__(self):
+        self.db = self._conn('trademe.db')
+        c = self.db.cursor()
+        c.executescript(self.SQL_CREATE_TABLE % dict( tb = self.TABLE))
+
+    def _conn(self, database):
+        conn = sqlite3.connect(database)
+        return conn
+
+    def save(self, listing):
+        assert(isinstance(listing, dict))
+        sql = "INSERT INTO %(tb)s VALUES('%(id)s', '')"
+
+    def search(self):
+        pass
 
 def main():
     trademe = Trademe()

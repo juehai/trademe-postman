@@ -252,6 +252,7 @@ def main():
                          OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
 
     for key, value in config['search'].items():
+        print 'Get %s listing...' % key
         params = value
         func = feedback_searching_result
         listings = trademe.getListings(feedback_func=func, **params)
@@ -266,11 +267,16 @@ def main():
             else:
                 send_row.append(row)
                 
-        template    = Template(filename='template/listing.htm')
-        SUBJECT = 'Elton Postman "%s"' % key
-        CONTENT     = template.render(listings=listings)
-        sendEmail(SMTP, SMTP_USER, SMTP_PASS,
-                   ME, SEND_TO, SUBJECT, CONTENT)
+        if send_row:
+            template    = Template(filename='template/listing.htm')
+            SUBJECT = 'Elton Postman "%s"' % key
+            CONTENT     = template.render(listings=send_row)
+            sendEmail(SMTP, SMTP_USER, SMTP_PASS,
+                       ME, SEND_TO, SUBJECT, CONTENT)
+            print 'Sending email done.'
+
+        print 'Sleep 2 seconds..'
+        time.sleep(2)
     
 
 if __name__ == '__main__':

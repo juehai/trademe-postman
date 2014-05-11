@@ -1,30 +1,47 @@
+# System config
 ---
-.base:
-  buy: 'All'
-  category: ''
-  condition: 'Used'
-  date_from: ''
-  expired: 'false'
-  pay: 'All'
-  photo_size: 'Large'
-  return_metadata: 'false'
-  page: '1'
-  rows: '25'
-  search_string: ''
-  shipping_method: 'All'
-  sort_order: 'ExpiryDesc'
-  user_region: ''
+SMTP_HOST: 'smtp.gmail.com:587'
+SMTP_USER: ''
+SMTP_PASS: ''
+DISPLAY_ME: 'EltonPostman'
+SEND_TO: 
+  - ''
 
-Trailers:
-  .include: .base
-  category: '0001-1259'
+# TradeMe Keys
+CONSUMER_KEY:       ''
+CONSUMER_SECRET:    ''
+OAUTH_TOKEN:        ''
+OAUTH_TOKEN_SECRET: ''
+
+
+# Search config 
+---
+  .base:
+    buy: 'All'
+    category: ''
+    condition: 'Used'
+    date_from: ''
+    expired: 'false'
+    pay: 'All'
+    photo_size: 'Gallery'
+    return_metadata: 'false'
+    page: '1'
+    rows: '25'
+    search_string: ''
+    shipping_method: 'All'
+    sort_order: 'ExpiryDesc'
+    user_region: ''
   
-Hobs & ovens:
-  .include: .base
-  category: '0004-0371-6881'
-
-search_trailer_in_farming:
-  .include: .base
-  category: '0010-0395-'
-  condition: 'All'
-  search_string: 'trailer'
+  Trailers:
+    .include: .base
+    category: '0001-1259'
+    
+  Hobs & ovens:
+    .include: .base
+    category: '0004-0371-6881'
+  
+  search_trailer_in_farming:
+    .include: .base
+    category: '0010-0395-'
+    condition: 'All'
+    search_string: 'trailer'

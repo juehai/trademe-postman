@@ -11,6 +11,7 @@ import datetime
 import yaml
 import sqlite3
 from requests_oauthlib import OAuth1Session
+from mako.template import Template
 
 TRADEME_BASE_API = 'http://api.trademe.co.nz/v1/Search/%s.json'
 CONSUMER_KEY     = ''
@@ -24,6 +25,12 @@ def json_encode(s):
 
 def json_decode(s):
     return json.loads(s)
+
+def md5(s):
+    import hashlib
+    m = hashlib.md5()
+    m.update(s)
+    return m.hexdigest()
 
 class Trademe(object):
     trademe = requests
@@ -127,8 +134,9 @@ def getConfig(cfile):
     config = dict()
     try:
         with open(cfile, 'rb') as f:
-            resource = yaml.load(f.read())
-            config = _merge(resource)
+            sys, search = yaml.load_all(f.read())
+            config['system'] = sys
+            config['search'] = _merge(search)
             f.close()
     except IOError as e:
         print str(e)
@@ -153,11 +161,12 @@ def sendEmail(smtp, user, passwd, me, send_to,
     '''
     import email
     import mimetypes
+    import smtplib
     from email.MIMEMultipart import MIMEMultipart
     from email.MIMEText import MIMEText
     from email.MIMEImage import MIMEImage
     from email.Header import Header
-    from email.utils import COMMASPACE,formatdate import smtplib
+    from email.utils import COMMASPACE,formatdate 
 
     assert(isinstance(send_to, list))
     smtp_host, smtp_port = smtp.split(":")
@@ -192,7 +201,7 @@ class ListingModel(object):
 
     SQL_CREATE_TABLE = '''
 CREATE TABLE IF NOT EXISTS %(tb)s(id INTEGER PRIMARY KEY DESC, title, price, buynow, category, url, pic, region, suburb, md5);
-CREATE UNIQUE INDEX TradeMe_md5 ON %(tb)s(md5);
+CREATE UNIQUE INDEX IF NOT EXISTS TradeMe_md5 ON %(tb)s(md5);
 '''
 
     SQL_SELECT_LISTING = 'SELECT id FROM %(tb)s WHERE md5=%(md5)s;'
@@ -208,36 +217,75 @@ CREATE UNIQUE INDEX TradeMe_md5 ON %(tb)s(md5);
 
     def save(self, listing):
         assert(isinstance(listing, dict))
-        sql = "INSERT INTO %(tb)s VALUES('%(id)s', '')"
+        fields = ['id', 'title', 'price', 'buynow',
+                  'category', 'url', 'pic', 'region',
+                  'suburb', 'md5']
+	
+        sql = "INSERT INTO %s(%s) VALUES(%s)" % (self.TABLE, 
+                ', '.join(map(lambda x: "%s" % x, fields)),
+                ', '.join(map(lambda x: "?", fields)))
+    
+        data = (
+                listing['ListingId'],
+                listing['Title'],
+                listing.get('PriceDisplay', 'None'),
+                listing.get('BuyNowPrice', 'None'),
+                listing['Category'],
+                listing['ListingUrl'],
+                listing['PictureHref'],
+                listing['Region'],
+                listing['Suburb'],
+                md5('%s-%s' % ( listing['ListingId'],
+                                listing['PriceDisplay'])),
+                )
 
-    def search(self):
-        pass
+        c = self.db.cursor()
+        c.execute(sql, data)
+        self.db.commit()
 
 def main():
     trademe = Trademe()
     #trademe._authenticate(CONSUMER_KEY, CONSUMER_SECRET)
     #                      OAUTH_TOKEN, OAUTH_SECRET)
+    #watch_list = trademe.getMyWatchList()
     trademe.authenticate(CONSUMER_KEY, CONSUMER_SECRET,
-                          OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
-    watch_list = trademe.getMyWatchList()
-    config = getConfig('prod.yaml')
-    params = config.get('search_trailer_in_farming')
-    func = feedback_searching_result
-    listings = trademe.getListings(feedback_func=func, **params)
+                         OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
 
-    #SMTP='smtp.gmail.com:587'
-    #SMTP_USER = ''
-    #SMTP_PASS = ''
-    #ME = 'TradeMePostman'
-    #SEND_TO = ['']
-    #SUBJECT = 'TEST SEND MAIL'
-    #CONTENT = '<html><body>hello.</body></html>'
-    
-    
-
-    #sendEmail(SMTP, SMTP_USER, SMTP_PASS,
-    #          ME, SEND_TO, SUBJECT, CONTENT)
+    for key, value in config['search'].items():
+        params = value
+        func = feedback_searching_result
+        listings = trademe.getListings(feedback_func=func, **params)
+        obj_listing = ListingModel()
+        send_row = list()
+        for row in listings:
+            try:
+                obj_listing.save(row)
+            except sqlite3.IntegrityError as e:
+                if not str(e) == 'column md5 is not unique':
+                    raise
+            else:
+                send_row.append(row)
+                
+        template    = Template(filename='template/listing.htm')
+        SUBJECT = 'Elton Postman "%s"' % key
+        CONTENT     = template.render(listings=listings)
+        sendEmail(SMTP, SMTP_USER, SMTP_PASS,
+                   ME, SEND_TO, SUBJECT, CONTENT)
     
 
 if __name__ == '__main__':
-    main()
+    config = getConfig('prod.yaml')
+    SMTP        = config['system'].get('SMTP_HOST')
+    SMTP_USER   = config['system'].get('SMTP_USER')
+    SMTP_PASS   = config['system'].get('SMTP_PASS')
+    ME          = config['system'].get('DISPLAY_ME')
+    SEND_TO     = config['system'].get('SEND_TO')
+
+    try:
+        main()
+    except Exception as e:
+        raise
+        SUBJECT = 'EltonPostman crashed'
+        CONTENT = 'Message: %s' % str(e)
+        sendEmail(SMTP, SMTP_USER, SMTP_PASS,
+                   ME, SEND_TO, SUBJECT, CONTENT)

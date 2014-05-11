@@ -30,8 +30,8 @@
             <th class="warning" colspan='3'> ${listing['Title']} </th>
           </tr>
           <tr>
-            <td rowspan="4">
-              <a href="${listing['ListingUrl']}"><img src="${listing['PictureHref']}" ></a>
+            <td class="text-center" rowspan="4">
+              <a href="${listing['ListingUrl']}"><img class="img-thumbnail" src="${listing['PictureHref']}" /></a>
             </td>
           </tr>
           <tr>
@@ -40,7 +40,7 @@
           </tr>
           <tr>
             <th > BuyNowPrice </td>
-            <td > ${listing.get('BuyNowPrice', '-')} </td>
+            <td > $${listing.get('BuyNowPrice', '-')} </td>
           </tr>
           <tr>
             <th > Location </td>

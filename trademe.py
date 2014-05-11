@@ -281,6 +281,11 @@ if __name__ == '__main__':
     ME          = config['system'].get('DISPLAY_ME')
     SEND_TO     = config['system'].get('SEND_TO')
 
+    CONSUMER_KEY        = config['system'].get('CONSUMER_KEY')
+    CONSUMER_SECRET     = config['system'].get('CONSUMER_SECRET')
+    OAUTH_TOKEN         = config['system'].get('OAUTH_TOKEN')
+    OAUTH_TOKEN_SECRET  = config['system'].get('OAUTH_TOKEN_SECRET')
+
     try:
         main()
     except Exception as e:

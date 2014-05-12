@@ -280,6 +280,8 @@ def main():
                     raise
             else:
                 send_row.append(row)
+        # close db
+        obj_listing.db.close()
 
         ## template    = Template(filename='template/listing.htm')
         ## print template.render(listings=listings).encode('utf-8')

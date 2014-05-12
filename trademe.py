@@ -103,7 +103,7 @@ def feedback_searching_result(data):
 
         # fix column format
         if listing.has_key('BuyNowPrice'):
-            listing['BuyNowPrice'] = '$' + listing['BuyNowPrice']
+            listing['BuyNowPrice'] = '$%s' % listing['BuyNowPrice']
         else:
             listing['BuyNowPrice'] = '-'
         if not listing.has_key('PriceDisplay'):

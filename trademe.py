@@ -225,19 +225,23 @@ CREATE UNIQUE INDEX IF NOT EXISTS TradeMe_md5 ON %(tb)s(md5);
                 ', '.join(map(lambda x: "%s" % x, fields)),
                 ', '.join(map(lambda x: "?", fields)))
     
-        data = (
-                listing['ListingId'],
-                listing['Title'],
-                listing.get('PriceDisplay', 'None'),
-                listing.get('BuyNowPrice', 'None'),
-                listing['Category'],
-                listing['ListingUrl'],
-                listing['PictureHref'],
-                listing['Region'],
-                listing['Suburb'],
-                md5('%s-%s' % ( listing['ListingId'],
-                                listing['PriceDisplay'])),
-                )
+        try:
+            data = (
+                    listing['ListingId'],
+                    listing['Title'],
+                    listing.get('PriceDisplay', 'None'),
+                    listing.get('BuyNowPrice', 'None'),
+                    listing['Category'],
+                    listing['ListingUrl'],
+                    listing.get('PictureHref', 'http://www.trademe.co.nz/images/NewSearchCards/LVIcons/hasPhoto_160x120.png'),
+                    listing['Region'],
+                    listing['Suburb'],
+                    md5('%s-%s' % ( listing['ListingId'],
+                                    listing['PriceDisplay'])),
+                    )
+        except KeyError as e:
+            print listing
+            raise
 
         c = self.db.cursor()
         c.execute(sql, data)

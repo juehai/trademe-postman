@@ -100,8 +100,19 @@ def feedback_searching_result(data):
         listing = filter(lambda x: x[0] in f_keys, 
                               raw_listing.items())
         listing = dict(listing)
-        listing['ListingUrl'] = listing_url % listing['ListingId'] 
 
+        # fix column format
+        if listing.has_key('BuyNowPrice'):
+            listing['BuyNowPrice'] = '$' + listing['BuyNowPrice']
+        else:
+            listing['BuyNowPrice'] = '-'
+        if not listing.has_key('PriceDisplay'):
+            listing['PriceDisplay'] = '-'
+        if not listing.has_key('PictureHref'):
+           listing['PictureHref'] = 'http://www.trademe.co.nz/images/NewSearchCards/LVIcons/hasPhoto_160x120.png'
+
+
+        listing['ListingUrl'] = listing_url % listing['ListingId'] 
         which_category = filter(lambda c: 
                             c['Category'] == listing['Category'],
                             data['FoundCategories'])
@@ -229,19 +240,18 @@ CREATE UNIQUE INDEX IF NOT EXISTS TradeMe_md5 ON %(tb)s(md5);
             data = (
                     listing['ListingId'],
                     listing['Title'],
-                    listing.get('PriceDisplay', 'None'),
-                    listing.get('BuyNowPrice', 'None'),
+                    listing['PriceDisplay'],
+                    listing['BuyNowPrice'],
                     listing['Category'],
                     listing['ListingUrl'],
-                    listing.get('PictureHref', 'http://www.trademe.co.nz/images/NewSearchCards/LVIcons/hasPhoto_160x120.png'),
+                    listing['PictureHref'],
                     listing['Region'],
                     listing['Suburb'],
                     md5('%s-%s' % ( listing['ListingId'],
                                     listing['PriceDisplay'])),
                     )
         except KeyError as e:
-            print listing
-            raise
+            raise Exception("%s.(data: %s)" % (str(e), listing))
 
         c = self.db.cursor()
         c.execute(sql, data)

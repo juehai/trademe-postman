@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # Author: Yang Gao <gaoyang.public@gmail.com>
-# vim: ts=4 et ai
+# vim: ts=4 et
 
 import sys
 import requests 
@@ -10,6 +10,7 @@ import time
 import datetime
 import yaml
 import sqlite3
+import logging
 from requests_oauthlib import OAuth1Session
 from mako.template import Template
 
@@ -52,12 +53,12 @@ class Trademe(object):
         self.trademe = OAuth1Session(consumer_key, **kw) 
         self.trademe.fetch_request_token(request_token_url)
         authorization_url = self.trademe.authorization_url(authorization_base_url)
-        print(authorization_url)
+        log.info('Authorization url: %s' % authorization_url)
         redirect_response = raw_input('Paste the full redirect URL here:')
         self.trademe.parse_authorization_response(redirect_response)
         oauthxx = self.trademe.fetch_access_token(access_token_url)
-        print oauthxx
-	
+        log.info('oauth token: %s' % authxx)
+    
     def authenticate(self, consumer_key, 
                            consumer_secret,
                            oauth_token, 
@@ -67,14 +68,14 @@ class Trademe(object):
         kw['resource_owner_key'] = oauth_token
         kw['resource_owner_secret'] = oauth_secret
         self.trademe = OAuth1Session(consumer_key, **kw) 
-	
+        log.debug('TradeMe authenticate successfuly.')
+    
 
     def getListings(self, api_path="General", 
                           feedback_func=None, **kw):
 
         api = TRADEME_BASE_API % api_path
         result = None
-
         params = dict(kw)
         try:
             resp = self.trademe.get(api, params=params, timeout=30)
@@ -150,10 +151,10 @@ def getConfig(cfile):
             config['search'] = _merge(search)
             f.close()
     except IOError as e:
-        print str(e)
+        log.error(str(e))
         sys.exit(2)
     except KeyError as e:
-        print 'Include config(%s) does not exist.' % str(e)
+        log.error('Include config(%s) does not exist.' % str(e))
         sys.exit(3)
     except Exception as e:
         raise
@@ -203,10 +204,6 @@ def sendEmail(smtp, user, passwd, me, send_to,
     mailServer.sendmail(user, toAll, msg.as_string())
     mailServer.close()
 
-
-def template(data):
-    pass
-
 class ListingModel(object):
     TABLE = 'TradeMe'
 
@@ -231,7 +228,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS TradeMe_md5 ON %(tb)s(md5);
         fields = ['id', 'title', 'price', 'buynow',
                   'category', 'url', 'pic', 'region',
                   'suburb', 'md5']
-	
+    
         sql = "INSERT INTO %s(%s) VALUES(%s)" % (self.TABLE, 
                 ', '.join(map(lambda x: "%s" % x, fields)),
                 ', '.join(map(lambda x: "?", fields)))
@@ -266,22 +263,24 @@ def main():
                          OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
 
     for key, value in config['search'].items():
-        print 'Get %s listing...' % key
+        log.info('Get %s listing...' % key)
         params = value
         func = feedback_searching_result
         listings = trademe.getListings(feedback_func=func, **params)
-        obj_listing = ListingModel()
         send_row = list()
         for row in listings:
             try:
+                obj_listing = ListingModel()
+                log.debug('save listing: %s' % row)
                 obj_listing.save(row)
             except sqlite3.IntegrityError as e:
                 if not str(e) == 'column md5 is not unique':
                     raise
             else:
                 send_row.append(row)
-        # close db
-        obj_listing.db.close()
+            finally:
+                # close db
+                obj_listing.db.close()
 
         ## template    = Template(filename='template/listing.htm')
         ## print template.render(listings=listings).encode('utf-8')
@@ -293,11 +292,7 @@ def main():
             CONTENT     = template.render(listings=send_row)
             sendEmail(SMTP, SMTP_USER, SMTP_PASS,
                        ME, SEND_TO, SUBJECT, CONTENT)
-            print 'Sending email done.'
-
-        print 'Sleep 2 seconds..'
-        time.sleep(2)
-    
+            log.info('Sending email to %s done.' % SEND_TO)
 
 if __name__ == '__main__':
     config = getConfig('prod.yaml')
@@ -311,6 +306,10 @@ if __name__ == '__main__':
     CONSUMER_SECRET     = config['system'].get('CONSUMER_SECRET')
     OAUTH_TOKEN         = config['system'].get('OAUTH_TOKEN')
     OAUTH_TOKEN_SECRET  = config['system'].get('OAUTH_TOKEN_SECRET')
+
+    FORMAT = '%(levelname)s: %(message)s'
+    logging.basicConfig(format=FORMAT)
+    log = logging.getLogger('postman')
 
     try:
         main()

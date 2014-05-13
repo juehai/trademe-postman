@@ -13,6 +13,8 @@ CONSUMER_SECRET:    ''
 OAUTH_TOKEN:        ''
 OAUTH_TOKEN_SECRET: ''
 
+# Log level
+LOG_LEVEL: 'DEBUG'
 
 # Search config 
 ---

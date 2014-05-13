@@ -68,7 +68,7 @@ class Trademe(object):
         kw['resource_owner_key'] = oauth_token
         kw['resource_owner_secret'] = oauth_secret
         self.trademe = OAuth1Session(consumer_key, **kw) 
-        log.debug('TradeMe authenticate successfuly.')
+        log.info('TradeMe authenticate successfuly.')
     
 
     def getListings(self, api_path="General", 
@@ -255,15 +255,17 @@ CREATE UNIQUE INDEX IF NOT EXISTS TradeMe_md5 ON %(tb)s(md5);
         self.db.commit()
 
 def main():
+    log.info('Start init trademe.')
     trademe = Trademe()
     #trademe._authenticate(CONSUMER_KEY, CONSUMER_SECRET)
     #                      OAUTH_TOKEN, OAUTH_SECRET)
     #watch_list = trademe.getMyWatchList()
+    log.info('Authenticate TradeMe API.')
     trademe.authenticate(CONSUMER_KEY, CONSUMER_SECRET,
                          OAUTH_TOKEN, OAUTH_TOKEN_SECRET)
 
     for key, value in config['search'].items():
-        log.info('Get %s listing...' % key)
+        log.info('Geting %s listing.' % key)
         params = value
         func = feedback_searching_result
         listings = trademe.getListings(feedback_func=func, **params)
@@ -316,8 +318,9 @@ if __name__ == '__main__':
     try:
         main()
     except Exception as e:
-        raise
+        log.error('%s' % str(e))
         SUBJECT = 'EltonPostman crashed'
         CONTENT = 'Message: %s' % str(e)
         sendEmail(SMTP, SMTP_USER, SMTP_PASS,
                    ME, SEND_TO, SUBJECT, CONTENT)
+        log.debug('Send error email done.')

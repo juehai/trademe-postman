@@ -310,6 +310,8 @@ if __name__ == '__main__':
     FORMAT = '%(levelname)s: %(message)s'
     logging.basicConfig(format=FORMAT)
     log = logging.getLogger('postman')
+    log_level = getattr(logging, config['system'].get('LOG_LEVEL', 'INFO'))
+    log.setLevel(log_level)
 
     try:
         main()

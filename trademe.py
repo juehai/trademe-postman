@@ -290,7 +290,7 @@ def main():
                 
         if send_row:
             template    = Template(filename='template/listing.htm')
-            SUBJECT = 'Elton Postman "%s"' % key
+            SUBJECT = 'EltonPostman "%s"' % key
             CONTENT     = template.render(listings=send_row)
             sendEmail(SMTP, SMTP_USER, SMTP_PASS,
                        ME, SEND_TO, SUBJECT, CONTENT)
@@ -321,7 +321,7 @@ if __name__ == '__main__':
         main()
     except Exception as e:
         log.error('%s' % str(e))
-        SUBJECT = 'EltonPostman crashed'
+        SUBJECT = '[Warning]EltonPostman crashed'
         CONTENT = 'Message: %s' % str(e)
         sendEmail(SMTP, SMTP_USER, SMTP_PASS,
                    ME, SEND_TO, SUBJECT, CONTENT)

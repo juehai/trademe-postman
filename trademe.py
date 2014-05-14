@@ -295,6 +295,8 @@ def main():
             sendEmail(SMTP, SMTP_USER, SMTP_PASS,
                        ME, SEND_TO, SUBJECT, CONTENT)
             log.info('Sending email to %s done.' % SEND_TO)
+        else:
+            log.info('No update Listing in this round.')
 
 if __name__ == '__main__':
     config = getConfig('prod.yaml')

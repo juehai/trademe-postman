@@ -206,6 +206,8 @@ def sendEmail(smtp, user, passwd, me, send_to,
     mailServer.close()
 
 def check_sensitive_time():
+    import re
+    from pytz import timezone
 
     if SENSITIVE_TIMEZONE is None or SENSITIVE_TIME is None:
         return False

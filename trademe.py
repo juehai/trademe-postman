@@ -204,6 +204,33 @@ def sendEmail(smtp, user, passwd, me, send_to,
     mailServer.sendmail(user, toAll, msg.as_string())
     mailServer.close()
 
+def check_sensitive_time():
+
+    if SENSITIVE_TIMEZONE is None or SENSITIVE_TIME is None:
+        return False
+
+    regex = re.compile(r'^(\d?\d:?\d\d)-(\d?\d:?\d\d)$')
+    t1, t2 = regex.findall(SENSITIVE_TIME)[0]
+    t1 = t1.replace(":", "")
+    t2 = t2.replace(":", "")
+
+    tz = timezone(SENSITIVE_TIMEZONE)
+    now = datetime.now(tz)
+    t3 = '%02i%02i' % (now.hour, now.minute)
+
+    if ( t1 < t2 ):
+        if ( ( t1 <= t3 ) and ( t3 <= t2 ) ):
+            msg = 'Current time %s matched %s%s during test: %s'
+            log.warning(msg % (t3, t1, t2, SENSITIVE_TIME))
+            return True
+
+    else:
+        if ( ( t3 >= t1 ) or ( t3 <= t2 ) ):
+            msg = 'Current time %s matched %s%s during test: %s'
+            log.warning(msg % (t3, t1, t2, SENSITIVE_TIME))
+            return True
+    return False
+
 class ListingModel(object):
     TABLE = 'TradeMe'
 
@@ -326,6 +353,9 @@ if __name__ == '__main__':
 
     INTERVAL = config['system'].get('INTERVAL', 60)
 
+    SENSITIVE_TIMEZONE = config['system'].get('SENSITIVE_TIMEZONE', None)
+    SENSITIVE_TIME = config['system'].get('SENSITIVE_TIME', None)
+
     FORMAT = '%(levelname)s: %(message)s'
     logging.basicConfig(format=FORMAT)
     log = logging.getLogger('postman')
@@ -335,6 +365,7 @@ if __name__ == '__main__':
     # for daemontools
     while True:
         try:
+            if check_sensitive_time(): continue
             main()
         except Exception as e:
             log.error('%s' % str(e))

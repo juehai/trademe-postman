@@ -15,6 +15,10 @@ OAUTH_TOKEN_SECRET: ''
 
 # Log level
 LOG_LEVEL: 'DEBUG'
+INTERVAL: 60
+
+SENSITIVE_TIMEZONE: 'Pacific/Auckland'
+SENSITIVE_TIME: '2300-0700'
 
 # Search config 
 ---

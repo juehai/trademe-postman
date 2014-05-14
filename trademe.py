@@ -324,18 +324,25 @@ if __name__ == '__main__':
     OAUTH_TOKEN         = config['system'].get('OAUTH_TOKEN')
     OAUTH_TOKEN_SECRET  = config['system'].get('OAUTH_TOKEN_SECRET')
 
+    INTERVAL = config['system'].get('INTERVAL', 60)
+
     FORMAT = '%(levelname)s: %(message)s'
     logging.basicConfig(format=FORMAT)
     log = logging.getLogger('postman')
     log_level = getattr(logging, config['system'].get('LOG_LEVEL', 'INFO'))
     log.setLevel(log_level)
 
-    try:
-        main()
-    except Exception as e:
-        log.error('%s' % str(e))
-        SUBJECT = '[Warning]EltonPostman crashed'
-        CONTENT = 'Message: %s' % str(e)
-        sendEmail(SMTP, SMTP_USER, SMTP_PASS,
-                   ME, SEND_TO, SUBJECT, CONTENT)
-        log.debug('Send error email done.')
+    # for daemontools
+    while True:
+        try:
+            main()
+        except Exception as e:
+            log.error('%s' % str(e))
+            SUBJECT = '[Warning]EltonPostman crashed'
+            CONTENT = 'Message: %s' % str(e)
+            sendEmail(SMTP, SMTP_USER, SMTP_PASS,
+                       ME, SEND_TO, SUBJECT, CONTENT)
+            log.debug('Send error email done.')
+        finally:
+            log.info('All done. Sleep %d second(s)..' % INTERVAL)
+            time.sleep(INTERVAL)

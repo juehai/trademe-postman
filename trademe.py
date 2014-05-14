@@ -208,7 +208,7 @@ class ListingModel(object):
     TABLE = 'TradeMe'
 
     SQL_CREATE_TABLE = '''
-CREATE TABLE IF NOT EXISTS %(tb)s(id INTEGER PRIMARY KEY DESC, title, price, buynow, category, url, pic, region, suburb, md5, ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
+CREATE TABLE IF NOT EXISTS %(tb)s(id INTEGER PRIMARY KEY DESC, title, price, buynow, category, url, pic, region, suburb, md5, uptime TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
 CREATE UNIQUE INDEX IF NOT EXISTS TradeMe_md5 ON %(tb)s(md5);
 '''
     def __init__(self):
@@ -288,8 +288,8 @@ def main():
                 log.debug('save listing: %s' % row)
                 if not obj_listing.is_exist(row):
                     send_row.append(row)
-                else:
-                    obj_listing.save(row)
+                # update listing to database
+                obj_listing.save(row)
             except sqlite3.IntegrityError as e:
                 if not str(e) == 'column md5 is not unique':
                     raise

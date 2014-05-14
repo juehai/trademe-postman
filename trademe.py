@@ -262,7 +262,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS TradeMe_md5 ON %(tb)s(md5);
         sql = "SELECT md5 FROM %s WHERE md5=%s"
         sql = sql % (self.TABLE, self._make_md5(listing))
         c = self.db.cursor()
-        ret = c.execute(sql))
+        ret = c.execute(sql)
         if not ret:
             return False
         return True

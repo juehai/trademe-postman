@@ -208,7 +208,7 @@ class ListingModel(object):
     TABLE = 'TradeMe'
 
     SQL_CREATE_TABLE = '''
-CREATE TABLE IF NOT EXISTS %(tb)s(id INTEGER PRIMARY KEY DESC, title, price, buynow, category, url, pic, region, suburb, md5);
+CREATE TABLE IF NOT EXISTS %(tb)s(id INTEGER PRIMARY KEY DESC, title, price, buynow, category, url, pic, region, suburb, md5, ctime TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
 CREATE UNIQUE INDEX IF NOT EXISTS TradeMe_md5 ON %(tb)s(md5);
 '''
     def __init__(self):

@@ -42,8 +42,39 @@ LOG_LEVEL: 'DEBUG'
     .include: .base
     category: '0004-0371-6881'
   
-  search_trailer_in_farming:
+  Trailer_in_farming:
     .include: .base
     category: '0010-0395-'
     condition: 'All'
     search_string: 'trailer'
+
+##  Rinnai_in_gas:
+##    .include: .base
+##    category: '0004-0370-0560-0933'
+##    condition: 'All'
+##    search_string: 'rinnai'
+
+  gas:
+    .include: .base
+    category: '0010-0398'
+    search_string: 'gas'
+    user_region: '50'
+  sheds:
+    .include: .base
+    category: '0004-0375-6873-9131-'
+##  rheem laser:
+##    .include: .base
+##    category: ''
+##    condition: 'All'
+##    search_string: 'rheem laser'
+##  rheem lazer:
+##    .include: .base
+##    category: ''   
+##    condition: 'All'
+##    search_string: 'rheem lazer'
+  Freezers:
+    .include: .base
+    category: '0004-0371-0039-4182-'
+  Hobs & ovens:
+    .include: .base
+    category: '0004-0371-6881-8282-'

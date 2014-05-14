@@ -211,9 +211,6 @@ class ListingModel(object):
 CREATE TABLE IF NOT EXISTS %(tb)s(id INTEGER PRIMARY KEY DESC, title, price, buynow, category, url, pic, region, suburb, md5);
 CREATE UNIQUE INDEX IF NOT EXISTS TradeMe_md5 ON %(tb)s(md5);
 '''
-
-    SQL_SELECT_LISTING = 'SELECT id FROM %(tb)s WHERE md5=%(md5)s;'
-
     def __init__(self):
         self.db = self._conn('trademe.db')
         c = self.db.cursor()
@@ -259,7 +256,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS TradeMe_md5 ON %(tb)s(md5);
         self.db.commit()
 
     def is_exist(self, listing):
-        sql = "SELECT md5 FROM %s WHERE md5=%s"
+        sql = "SELECT md5 FROM %s WHERE md5='%s'"
         sql = sql % (self.TABLE, self._make_md5(listing))
         log.debug("SQL: %s" % sql)
         c = self.db.cursor()

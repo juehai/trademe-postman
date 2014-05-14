@@ -285,7 +285,7 @@ def main():
             try:
                 obj_listing = ListingModel()
                 log.debug('save listing: %s' % row)
-                if obj_listing.is_exist(row):
+                if not obj_listing.is_exist(row):
                     send_row.append(row)
                 else:
                     obj_listing.save(row)

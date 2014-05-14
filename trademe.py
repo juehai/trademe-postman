@@ -223,13 +223,18 @@ CREATE UNIQUE INDEX IF NOT EXISTS TradeMe_md5 ON %(tb)s(md5);
         conn = sqlite3.connect(database)
         return conn
 
+    def _make_md5(self, listing):
+        md5sum =  md5('%s-%s' % ( listing['ListingId'],
+                               listing['PriceDisplay']))
+        return md5sum
+
     def save(self, listing):
         assert(isinstance(listing, dict))
         fields = ['id', 'title', 'price', 'buynow',
                   'category', 'url', 'pic', 'region',
                   'suburb', 'md5']
     
-        sql = "INSERT INTO %s(%s) VALUES(%s)" % (self.TABLE, 
+        sql = "INSERT OR REPLACE INTO %s(%s) VALUES(%s);" % (self.TABLE, 
                 ', '.join(map(lambda x: "%s" % x, fields)),
                 ', '.join(map(lambda x: "?", fields)))
     
@@ -244,8 +249,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS TradeMe_md5 ON %(tb)s(md5);
                     listing['PictureHref'],
                     listing['Region'],
                     listing['Suburb'],
-                    md5('%s-%s' % ( listing['ListingId'],
-                                    listing['PriceDisplay'])),
+                    self._make_md5(listing),
                     )
         except KeyError as e:
             raise Exception("%s.(data: %s)" % (str(e), listing))
@@ -253,6 +257,15 @@ CREATE UNIQUE INDEX IF NOT EXISTS TradeMe_md5 ON %(tb)s(md5);
         c = self.db.cursor()
         c.execute(sql, data)
         self.db.commit()
+
+    def is_exist(self, listing):
+        sql = "SELECT md5 FROM %s WHERE md5=%s"
+        sql = sql % (self.TABLE, self._make_md5(listing))
+        c = self.db.cursor()
+        ret = c.execute(sql))
+        if not ret:
+            return False
+        return True
 
 def main():
     log.info('Start init trademe.')
@@ -274,12 +287,13 @@ def main():
             try:
                 obj_listing = ListingModel()
                 log.debug('save listing: %s' % row)
-                obj_listing.save(row)
+                if obj_listing.is_exist(row):
+                    send_row.append(row)
+                else:
+                    obj_listing.save(row)
             except sqlite3.IntegrityError as e:
                 if not str(e) == 'column md5 is not unique':
                     raise
-            else:
-                send_row.append(row)
             finally:
                 # close db
                 obj_listing.db.close()

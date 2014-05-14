@@ -231,7 +231,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS TradeMe_md5 ON %(tb)s(md5);
                   'category', 'url', 'pic', 'region',
                   'suburb', 'md5']
     
-        sql = "INSERT OR REPLACE INTO %s(%s) VALUES(%s);" % (self.TABLE, 
+        sql = "REPLACE INTO %s(%s) VALUES(%s);" % (self.TABLE, 
                 ', '.join(map(lambda x: "%s" % x, fields)),
                 ', '.join(map(lambda x: "?", fields)))
     

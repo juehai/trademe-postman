@@ -4,6 +4,7 @@
 # vim: ts=4 et
 
 import sys
+import re
 import requests 
 import json
 import time

@@ -371,7 +371,9 @@ if __name__ == '__main__':
             if check_sensitive_time(): continue
             main()
         except Exception as e:
-            log.error('%s' % str(e))
+            log.error('v'*80)
+            log.exception('Got exception on main handler')
+            log.error('^'*80)
             SUBJECT = '[Warning]EltonPostman crashed'
             CONTENT = 'Message: %s' % str(e)
             sendEmail(SMTP, SMTP_USER, SMTP_PASS,

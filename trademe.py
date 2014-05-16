@@ -259,7 +259,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS TradeMe_md5 ON %(tb)s(md5);
 
     def _make_md5(self, listing):
         md5sum =  md5('%s-%s' % ( listing['ListingId'],
-                               listing['PriceDisplay']))
+                               listing['BuyNowPrice']))
         return md5sum
 
     def save(self, listing):

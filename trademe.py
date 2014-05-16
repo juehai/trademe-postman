@@ -81,6 +81,7 @@ class Trademe(object):
             resp = self.trademe.get(api, params=params, timeout=30)
             result = resp.json()
         except Exception as e:
+            log.error('getListings faild.Message: %s' % resp)
             raise
 
         if not feedback_func is None:
@@ -128,7 +129,13 @@ def feedback_searching_result(data):
     f_keys = ['ListingId', 'Title', 'Category', 'PictureHref', 
               'Region', 'Suburb', 'PriceDisplay', 'StartPrice',
               'BuyNowPrice']
-    ret = map(_collect, data['List'])
+
+    try:
+        ret = map(_collect, data['List'])
+    except KeyError as e:
+        log.error('List not in response.')
+        log.error('response: %s' % data)
+        raise Exception('Response not has "List" key.')
     return ret
 
 def getConfig(cfile):

@@ -81,7 +81,6 @@ class Trademe(object):
             resp = self.trademe.get(api, params=params, timeout=30)
             result = resp.json()
         except Exception as e:
-            log.error('getListings faild.Message: %s' % resp)
             raise
 
         if not feedback_func is None:

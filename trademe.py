@@ -75,15 +75,15 @@ class Trademe(object):
                           feedback_func=None, **kw):
 
         api = TRADEME_BASE_API % api_path
-        result = None
+        result = list()
         params = dict(kw)
         try:
             resp = self.trademe.get(api, params=params, timeout=30)
             result = resp.json()
         except Exception as e:
-            raise
+            log.warning('Invalid TradeMe response.')
 
-        if not feedback_func is None:
+        if result and not feedback_func is None:
             result = feedback_func(result)
         return result
 

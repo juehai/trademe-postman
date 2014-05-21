@@ -129,12 +129,13 @@ def feedback_searching_result(data):
               'Region', 'Suburb', 'PriceDisplay', 'StartPrice',
               'BuyNowPrice']
 
+    ret = list()
     try:
         ret = map(_collect, data['List'])
     except KeyError as e:
         log.error('List not in response.')
         log.error('response: %s' % data)
-        raise Exception('Response not has "List" key.')
+        #raise Exception('Response not has "List" key.')
     return ret
 
 def getConfig(cfile):

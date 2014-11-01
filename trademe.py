@@ -14,7 +14,7 @@ import logging
 from requests_oauthlib import OAuth1Session
 from mako.template import Template
 
-TRADEME_BASE_API = 'http://api.trademe.co.nz/v1/Search/%s.json'
+TRADEME_BASE_API = 'https://api.trademe.co.nz/v1/Search/%s.json'
 CONSUMER_KEY     = ''
 CONSUMER_SECRET  = ''
 OAUTH_TOKEN_SECRET = ''

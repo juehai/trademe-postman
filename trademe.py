@@ -112,6 +112,9 @@ def feedback_searching_result(data):
         if not listing.has_key('PictureHref'):
            listing['PictureHref'] = 'http://www.trademe.co.nz/images/NewSearchCards/LVIcons/hasPhoto_160x120.png'
 
+        if listing.has_key('EndDate'):
+            listing['EndDate'] = listing['EndDate'].strftime("%Y-%m-%d %H:%M:%S")
+
 
         listing['ListingUrl'] = listing_url % listing['ListingId'] 
         which_category = filter(lambda c: 
@@ -339,7 +342,8 @@ def main():
         ## sys.exit()
                 
         if send_row:
-            template    = Template(filename='template/listing.htm')
+#            template    = Template(filename='template/listing.htm')
+            template    = Template(filename='template/trademe.htm')
             SUBJECT = 'EltonPostman "%s"' % key
             CONTENT     = template.render(listings=send_row)
             sendEmail(SMTP, SMTP_USER, SMTP_PASS,

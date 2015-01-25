@@ -11,6 +11,7 @@ import time
 import yaml
 import sqlite3
 import logging
+from datetime import datetime
 from requests_oauthlib import OAuth1Session
 from mako.template import Template
 
@@ -113,7 +114,11 @@ def feedback_searching_result(data):
            listing['PictureHref'] = 'http://www.trademe.co.nz/images/NewSearchCards/LVIcons/hasPhoto_160x120.png'
 
         if listing.has_key('EndDate'):
-            listing['EndDate'] = listing['EndDate'].strftime("%Y-%m-%d %H:%M:%S")
+            DATETIME_FORMAT = 'Close on %a, %d %b'
+            m = re.search(r"Date\((\d+)\)", listing['EndDate'])
+            listing['EndDate'] = datetime.fromtimestamp(int(m.group(1))/1000.0).strftime(DATETIME_FORMAT)
+        else:
+            listing['EndDate'] = '-'
 
 
         listing['ListingUrl'] = listing_url % listing['ListingId'] 
@@ -130,7 +135,7 @@ def feedback_searching_result(data):
     listing_url = 'http://www.trademe.co.nz/Browse/Listing.aspx?id=%s'
     f_keys = ['ListingId', 'Title', 'Category', 'PictureHref', 
               'Region', 'Suburb', 'PriceDisplay', 'StartPrice',
-              'BuyNowPrice']
+              'BuyNowPrice', 'StartDate', 'EndDate']
 
     ret = list()
     try:

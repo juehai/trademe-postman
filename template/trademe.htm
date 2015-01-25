@@ -25,7 +25,7 @@
                   <tbody><tr bgcolor="#FFFFFF">
                     <td style="padding:10px 0;text-align:center" width="180" height="140"><a href="${listing['ListingUrl']}" target="_blank"><img align="middle" style="border-width:0px" alt="Photo" src="${listing['PictureHref']}" class="CToWUd"></a></td>
                     <td style="padding:10px 0;text-align:left;vertical-align:top">
-                      <div style="font-family:Arial;font-size:16px;line-height:25px"><a style="border-bottom:1px solid #0033cc;text-decoration:none" href="http://www.trademe.co.nz/link.aspx?i=12146&amp;id=837906620&amp;t=se&amp;s=7020311&amp;c=397" target="_blank">${listing['Title']}</a></div>
+                      <div style="font-family:Arial;font-size:16px;line-height:25px"><a style="border-bottom:1px solid #0033cc;text-decoration:none" href="http://www.trademe.co.nz/link.aspx?i=12146&amp;id=837906620&amp;t=se&amp;s=7020311&amp;c=397" target="_blank">${listing['Title']|limit_func}</a></div>
                       <div style="padding-top:5px;font-size:12px">${listing['Suburb']},&nbsp;${listing['Region']}</div>
                       <div style="margin-top:2px;font-size:12px">
           ${listing['EndDate']}</div>

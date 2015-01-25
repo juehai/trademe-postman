@@ -34,6 +34,12 @@ def md5(s):
     m.update(s)
     return m.hexdigest()
 
+
+def title_limit(title, limit=35):
+    if len(title) > limit:
+        title = title[:limit-3] + "..."
+    return title
+
 class Trademe(object):
     trademe = requests
 
@@ -350,7 +356,7 @@ def main():
 #            template    = Template(filename='template/listing.htm')
             template    = Template(filename='template/trademe.htm')
             SUBJECT = 'EltonPostman "%s"' % key
-            CONTENT     = template.render(listings=send_row)
+            CONTENT     = template.render(listings=send_row, limit_func=title_limit)
             sendEmail(SMTP, SMTP_USER, SMTP_PASS,
                        ME, SEND_TO, SUBJECT, CONTENT)
             log.info('Sending email to %s done.' % SEND_TO)

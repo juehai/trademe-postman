@@ -353,8 +353,8 @@ def main():
         ## sys.exit()
                 
         if send_row:
-#            template    = Template(filename='template/listing.htm')
-            template    = Template(filename='template/trademe.htm')
+            template    = Template(filename='template/listing.htm')
+#            template    = Template(filename='template/trademe.htm')
             SUBJECT = 'EltonPostman "%s"' % key
             CONTENT     = template.render(listings=send_row, limit_func=title_limit)
             sendEmail(SMTP, SMTP_USER, SMTP_PASS,
